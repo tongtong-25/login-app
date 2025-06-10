@@ -2,145 +2,158 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TODO 리스트</title>
   <style>
     body {
-      margin: 0;
-      padding: 20px;
-      background-color: #c0cef7;
       font-family: 'Noto Sans KR', sans-serif;
+      background-color: #7C4DFF;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 60px;
+      padding: 20px;
     }
 
     h1 {
-      color: white;
       text-align: center;
-      margin-bottom: 20px;
+      color: white;
+      margin-bottom: 24px;
+      font-size: 24px;
     }
 
-    .todo-card {
-      background-color: #a080ff;
-      margin: 10px 0;
-      padding: 16px;
+    #todo-input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
       border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    #add-btn {
+      width: 100%;
+      padding: 14px;
+      background-color: white;
+      color: #7C4DFF;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #add-btn:hover {
+      background-color: #f1eaff;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background-color: white;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: white;
-      font-size: 16px;
     }
 
-    .todo-card.done {
+    li.completed span {
       text-decoration: line-through;
-      opacity: 0.6;
+      color: #aaa;
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-
-    .btn-add {
-      margin-top: 10px;
-      background-color: #fff;
-      color: #7b4fff;
-      border: none;
-      padding: 14px;
-      width: 100%;
-      font-weight: bold;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    .btn-delete {
-      background: transparent;
-      border: none;
-      font-size: 20px;
-      color: white;
+    .todo-text {
+      flex-grow: 1;
       margin-left: 10px;
-      cursor: pointer;
     }
 
-    @media screen and (max-width: 600px) {
-      .todo-card {
-        font-size: 15px;
-      }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-size: 14px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Simple Todo</h1>
-
-  <div id="todo-list"></div>
-
-  <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
-  <button class="btn-add" id="add-btn">추가</button>
+  <div class="container">
+    <h1>Simple Todo</h1>
+    <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+    <button id="add-btn">추가</button>
+    <ul id="todo-list"></ul>
+  </div>
 
   <script>
-    const email = localStorage.getItem("userEmail");
-    const STORAGE_KEY = `todos_${email}`;
-    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const input = document.getElementById('todo-input');
+    const button = document.getElementById('add-btn');
+    const list = document.getElementById('todo-list');
 
-    const todoList = document.getElementById("todo-list");
-    const todoInput = document.getElementById("todo-input");
-    const addBtn = document.getElementById("add-btn");
-
-    function saveTodos() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    }
+    const userEmail = localStorage.getItem('userEmail');
+    const todoKey = `todos_${userEmail}`;
+    let todos = JSON.parse(localStorage.getItem(todoKey)) || [];
 
     function renderTodos() {
-      todoList.innerHTML = "";
+      list.innerHTML = '';
       todos.forEach((todo, index) => {
-        const div = document.createElement("div");
-        div.className = "todo-card" + (todo.done ? " done" : "");
+        const li = document.createElement('li');
+        li.className = todo.done ? 'completed' : '';
 
-        const label = document.createElement("label");
-        label.style.flexGrow = "1";
-        label.innerHTML = `
-          <input type="checkbox" ${todo.done ? "checked" : ""} style="margin-right:10px;" />
-          ${todo.text}
-        `;
-
-        label.querySelector("input").addEventListener("change", () => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.done;
+        checkbox.addEventListener('change', () => {
           todos[index].done = !todos[index].done;
-          saveTodos();
-          renderTodos();
+          saveAndRender();
         });
 
-        const delBtn = document.createElement("button");
-        delBtn.className = "btn-delete";
-        delBtn.innerHTML = "🗑️";
-        delBtn.onclick = () => {
-          todos.splice(index, 1);
-          saveTodos();
-          renderTodos();
-        };
+        const span = document.createElement('span');
+        span.className = 'todo-text';
+        span.textContent = todo.text;
 
-        div.appendChild(label);
-        div.appendChild(delBtn);
-        todoList.appendChild(div);
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '삭제';
+        delBtn.className = 'delete-btn';
+        delBtn.addEventListener('click', () => {
+          todos.splice(index, 1);
+          saveAndRender();
+        });
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        list.appendChild(li);
       });
     }
 
-    addBtn.addEventListener("click", () => {
-      const text = todoInput.value.trim();
+    function saveAndRender() {
+      localStorage.setItem(todoKey, JSON.stringify(todos));
+      renderTodos();
+    }
+
+    button.addEventListener('click', () => {
+      const text = input.value.trim();
       if (text) {
         todos.push({ text, done: false });
-        todoInput.value = "";
-        saveTodos();
-        renderTodos();
+        input.value = '';
+        saveAndRender();
       }
     });
 
-    todoInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        addBtn.click();
-      }
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') button.click();
     });
 
     renderTodos();
