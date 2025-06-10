@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메인 페이지</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f6f8fa;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 24px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h2 {
+      margin: 0;
+    }
+
+    .logout-btn {
+      background: #ff5e5e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    h3 {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 6px;
+      margin-top: 32px;
+    }
+
+    #todo-container {
+      display: flex;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    #todo-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    #add-btn {
+      padding: 10px 16px;
+      font-size: 14px;
+      background: dodgerblue;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #todo-list li {
+      margin: 4px 0;
+    }
+
+    .post-preview {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .post-preview h4 {
+      margin: 0;
+      color: #0366d6;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .post-preview .meta {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .goto-board {
+      margin-top: 10px;
+      display: inline-block;
+      text-decoration: none;
+      color: rebeccapurple;
+    }
+
+    .goto-board:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2><span id="user-email"></span>님 환영합니다!</h2>
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+    <p>🏠 당신의 TODO 리스트, 게시판, 채팅 기능이 여기에 나올 예정입니다.</p>
+
+    <h3>📝 나의 TODO 리스트</h3>
+    <div id="todo-container">
+      <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+      <button id="add-btn">추가</button>
+    </div>
+    <ul id="todo-list"></ul>
+
+    <h3>📋 최신 게시글</h3>
+    <div id="latest-posts"></div>
+    <a href="board.html" class="goto-board">📂 전체 게시판 보기</a>
+  </div>
+
+  <script>
+    const email = localStorage.getItem('userEmail');
+    const emailSpan = document.getElementById('user-email');
+    if (email) {
+      emailSpan.textContent = email;
+    } else {
+      alert("로그인 정보가 없습니다.");
+      window.location.href = 'login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('userEmail');
+      location.href = 'login.html';
+    }
+
+    // TODO 기능
+    const todoInput = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const todoList = document.getElementById('todo-list');
+    const todoKey = `todos_${email}`;
+    let todos = JSON.parse(localStorage.getItem(todoKey)) || [];
+
+    function renderTodos() {
+      todoList.innerHTML = '';
+      todos.forEach((item, index) => {
+        const li = document.createElement('li');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.done;
+        checkbox.addEventListener('change', () => {
+          todos[index].done = checkbox.checked;
+          saveTodos();
+        });
+
+        const span = document.createElement('span');
+        span.textContent = item.text;
+        if (item.done) span.style.textDecoration = 'line-through';
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '삭제';
+        delBtn.style.marginLeft = '8px';
+        delBtn.onclick = () => {
+          todos.splice(index, 1);
+          saveTodos();
+        };
+
+        li.append(checkbox, span, delBtn);
+        todoList.appendChild(li);
+      });
+    }
+
+    function saveTodos() {
+      localStorage.setItem(todoKey, JSON.stringify(todos));
+      renderTodos();
+    }
+
+    addBtn.addEventListener('click', () => {
+      const text = todoInput.value.trim();
+      if (text) {
+        todos.push({ text, done: false });
+        todoInput.value = '';
+        saveTodos();
+      }
+    });
+
+    renderTodos();
+
+    // 게시글 미리보기
+    const postDiv = document.getElementById('latest-posts');
+    const postKey = `posts_${email}`;
+    const posts = JSON.parse(localStorage.getItem(postKey)) || [];
+
+    if (posts.length === 0) {
+      postDiv.innerHTML = '<p>게시글이 없습니다.</p>';
+    } else {
+      posts.slice(-5).reverse().forEach(post => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'post-preview';
+
+        const title = document.createElement('h4');
+        title.innerText = `[${post.category}] ${post.title}`;
+        title.onclick = () => {
+          localStorage.setItem('selectedPost', JSON.stringify(post));
+          location.href = 'view.html';
+        };
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerText = `${post.date}`;
+
+        wrapper.append(title, meta);
+        postDiv.append(wrapper);
+      });
+    }
+  </script>
+</body>
+</html>
