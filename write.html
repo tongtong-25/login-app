@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>글 작성</title>
+
+  <!-- ✅ Toast UI 에디터 CSS -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.css" />
+
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .editor-container {
+      max-width: 800px; /* ✅ 넓이 조정 */
+      margin: 60px auto;
+      padding: 32px 24px; /* ✅ 좌우 여백 추가 */
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .editor-container input[type="text"],
+    .editor-container select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .editor-container button {
+      margin-top: 24px;
+      padding: 12px 24px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .editor-container button:hover {
+      background-color: #0056b3;
+    }
+
+    /* ✅ 툴바 깨짐 방지 */
+    .toastui-editor-toolbar {
+      flex-wrap: wrap !important;
+      overflow-x: auto;
+    }
+
+    .toastui-editor-toolbar-icons {
+      background-color: transparent !important;
+    }
+
+    /* ✅ 툴바 한 줄 정렬 + 여백 줄이기 */
+.toastui-editor-toolbar {
+  flex-wrap: nowrap !important;
+  overflow-x: visible !important;
+  justify-content: flex-start;
+}
+
+.toastui-editor-toolbar-group {
+  margin-right: 4px !important;
+}
+
+.toastui-editor-toolbar-icons {
+  background-color: transparent !important;
+  padding: 4px !important;
+}
+.toastui-editor-toolbar {
+  flex-wrap: nowrap !important;
+  overflow-x: visible !important;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.toastui-editor-toolbar-group {
+  margin-right: 4px !important;
+  flex-shrink: 0;
+}
+
+.toastui-editor-toolbar-icons {
+  background-color: transparent !important;
+  padding: 2px 6px !important;
+  min-width: auto !important;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.toastui-editor-defaultUI-toolbar {
+  overflow-x: visible !important;
+  white-space: nowrap;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="editor-container">
+    <h2>📝 새 글 작성</h2>
+    <input type="text" id="post-title" placeholder="제목을 입력하세요" />
+    <select id="post-category">
+      <option value="일반">일반</option>
+      <option value="공지">공지</option>
+      <option value="질문">질문</option>
+      <option value="정보">정보</option>
+    </select>
+    <div id="editor" style="margin-bottom: 20px;"></div>
+    <button id="save-btn">저장</button>
+  </div>
+
+  <!-- ✅ Toast UI Editor JS -->
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script>
+    // ✅ 전역 에디터 객체 생성
+    const editor = new toastui.Editor({
+      el: document.querySelector('#editor'),
+      height: '400px',
+      initialEditType: 'wysiwyg',
+      previewStyle: 'vertical',
+      theme: 'light'
+    });
+
+    // ✅ 저장 버튼 클릭 이벤트
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const title = document.getElementById('post-title').value.trim();
+      const category = document.getElementById('post-category').value;
+      const content = editor.getHTML().trim();
+      const email = localStorage.getItem('userEmail');
+      const userKey = `posts_${email}`;
+
+      if (!title || !content) {
+        alert('제목과 내용을 모두 입력해주세요.');
+        return;
+      }
+
+      const post = {
+        title,
+        content,
+        category,
+        date: new Date().toLocaleString()
+      };
+
+      const existingPosts = JSON.parse(localStorage.getItem(userKey)) || [];
+      existingPosts.push(post);
+      localStorage.setItem(userKey, JSON.stringify(existingPosts));
+
+      alert('✅ 게시글이 저장되었습니다!');
+      window.location.href = 'board.html';
+    });
+  </script>
+</body>
+</html>

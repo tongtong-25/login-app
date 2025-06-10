@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>게시글 수정</title>
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .editor-container {
+      max-width: 720px;
+      margin: 60px auto;
+      padding: 32px;
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .editor-container input[type="text"],
+    .editor-container select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .editor-container button {
+      margin-top: 24px;
+      padding: 12px 24px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .editor-container button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="editor-container">
+    <h2>✏️ 게시글 수정</h2>
+    <input type="text" id="post-title" placeholder="제목을 입력하세요" />
+    <select id="post-category">
+      <option value="일반">일반</option>
+      <option value="공지">공지</option>
+      <option value="질문">질문</option>
+      <option value="정보">정보</option>
+    </select>
+    <div id="editor" style="margin-bottom: 20px;"></div>
+    <button id="update-btn">수정 완료</button>
+  </div>
+
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script>
+    const editor = new toastui.Editor({
+      el: document.querySelector('#editor'),
+      height: '400px',
+      initialEditType: 'wysiwyg',
+      previewStyle: 'vertical'
+    });
+
+    const email = localStorage.getItem('userEmail');
+    const userKey = `posts_${email}`;
+    const selected = JSON.parse(localStorage.getItem('selectedPost'));
+    const titleInput = document.getElementById('post-title');
+    const categorySelect = document.getElementById('post-category');
+
+    titleInput.value = selected.title;
+    categorySelect.value = selected.category;
+    editor.setHTML(selected.content);
+
+    document.getElementById('update-btn').addEventListener('click', () => {
+      const updatedTitle = titleInput.value.trim();
+      const updatedCategory = categorySelect.value;
+      const updatedContent = editor.getHTML().trim();
+
+      if (!updatedTitle || !updatedContent) {
+        alert('제목과 내용을 모두 입력해주세요.');
+        return;
+      }
+
+      let posts = JSON.parse(localStorage.getItem(userKey)) || [];
+
+      // 원래 글 찾기
+      const updatedPosts = posts.map(p => {
+        if (p.title === selected.title && p.date === selected.date) {
+          return {
+            ...p,
+            title: updatedTitle,
+            content: updatedContent,
+            category: updatedCategory
+          };
+        }
+        return p;
+      });
+
+      localStorage.setItem(userKey, JSON.stringify(updatedPosts));
+      alert('✅ 수정이 완료되었습니다!');
+      window.location.href = 'board.html';
+    });
+  </script>
+</body>
+</html>

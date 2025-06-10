@@ -14,7 +14,7 @@ document.getElementById('signup-btn').addEventListener('click', async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/signup', {
+    const response = await fetch('https://login-server-1-rx6d.onrender.com/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

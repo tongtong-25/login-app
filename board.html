@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>게시판</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .board-wrap {
+      max-width: 1000px;
+      margin: 60px auto;
+      background-color: #fff;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    h1 {
+      margin-bottom: 16px;
+    }
+
+    #search {
+      width: 60%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    #filter {
+      padding: 10px;
+      margin-left: 8px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .action-btn {
+      margin: 0 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="board-wrap">
+    <h1>📋 게시글 목록</h1>
+    <input type="text" id="search" placeholder="제목 검색..." />
+    <select id="filter">
+      <option value="">전체</option>
+      <option value="공지">공지</option>
+      <option value="질문">질문</option>
+      <option value="정보">정보</option>
+    </select>
+    <table>
+      <thead>
+        <tr>
+          <th>카테고리</th>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>작성시간</th>
+          <th>수정</th>
+          <th>삭제</th>
+        </tr>
+      </thead>
+      <tbody id="post-list"></tbody>
+    </table>
+    <p class="empty" id="empty-msg" style="display: none;">게시글이 없습니다.</p>
+  </div>
+
+  <script>
+    const email = localStorage.getItem('userEmail');
+    const userKey = `posts_${email}`;
+    let posts = JSON.parse(localStorage.getItem(userKey)) || [];
+
+    const postList = document.getElementById('post-list');
+    const emptyMsg = document.getElementById('empty-msg');
+    const search = document.getElementById('search');
+    const filter = document.getElementById('filter');
+
+    function render(filtered = posts) {
+      postList.innerHTML = '';
+      if (filtered.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
+      } else {
+        emptyMsg.style.display = 'none';
+      }
+
+      filtered.slice().reverse().forEach((post) => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${post.category}</td>
+          <td><a href="view.html" onclick="event.preventDefault(); viewPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">${post.title}</a></td>
+          <td>${email}</td>
+          <td>${post.date}</td>
+          <td><button class="action-btn" onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">수정</button></td>
+          <td><button class="action-btn" onclick="deletePost(${JSON.stringify(post).replace(/"/g, '&quot;')})" style="color:red;">삭제</button></td>
+        `;
+
+        postList.appendChild(row);
+      });
+    }
+
+    function viewPost(post) {
+      localStorage.setItem('selectedPost', JSON.stringify(post));
+      window.location.href = 'view.html';
+    }
+
+    function editPost(post) {
+      localStorage.setItem('selectedPost', JSON.stringify(post));
+      window.location.href = 'edit.html';
+    }
+
+    function deletePost(post) {
+      if (!confirm('정말 삭제하시겠습니까?')) return;
+      posts = posts.filter(p => p.title !== post.title || p.date !== post.date);
+      localStorage.setItem(userKey, JSON.stringify(posts));
+      render(posts);
+    }
+
+    search.addEventListener('input', () => {
+      const keyword = search.value.toLowerCase();
+      const filtered = posts.filter(p => p.title.toLowerCase().includes(keyword));
+      render(filtered);
+    });
+
+    filter.addEventListener('change', () => {
+      const category = filter.value;
+      const filtered = category ? posts.filter(p => p.category === category) : posts;
+      render(filtered);
+    });
+
+    render();
+  </script>
+</body>
+</html>

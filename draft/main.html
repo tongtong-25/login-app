@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메인</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ✅ 로그인 성공 시 보이는 영역 -->
+<div class="container" id="login-welcome" style="display: none;">
+  <h1>🎉 <span id="user-email"></span>님 환영합니다!</h1>
+  <p>당신의 TODO 리스트, 게시판, 채팅 기능이 여기에 나올 예정입니다.</p>
+
+  <h2>📝 나의 TODO 리스트</h2>
+  <div id="todo-container">
+    <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+    <button id="add-btn">추가</button>
+    <ul id="todo-list"></ul>
+  </div>
+</div>
+
+<!-- ❌ 로그인 정보 없을 때 -->
+<div class="container" id="login-fail" style="display: none;">
+  <h1>로그인 정보를 찾을 수 없습니다.</h1>
+  <p>main.html은 로그인 후에만 접근할 수 있습니다.</p>
+</div>
+
+<script>
+  // 사용자 인증
+  const email = localStorage.getItem('userEmail');
+  const welcomeBox = document.getElementById('login-welcome');
+  const failBox = document.getElementById('login-fail');
+  const emailSpan = document.getElementById('user-email');
+
+  if (email) {
+    emailSpan.innerText = email;
+    welcomeBox.style.display = 'block';
+  } else {
+    failBox.style.display = 'block';
+  }
+
+  // ✅ 사용자별 TODO 저장 키
+  const userKey = `todos_${email}`;
+  let todos = JSON.parse(localStorage.getItem(userKey)) || [];
+
+  const todoInput = document.getElementById('todo-input');
+  const addBtn = document.getElementById('add-btn');
+  const todoList = document.getElementById('todo-list');
+
+  function renderTodos() {
+    todoList.innerHTML = '';
+    todos.forEach((item, index) => {
+      const li = document.createElement('li');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = item.done;
+      checkbox.addEventListener('change', () => {
+        todos[index].done = checkbox.checked;
+        saveAndRender();
+      });
+
+      const span = document.createElement('span');
+      span.textContent = item.text;
+      if (item.done) {
+        span.style.textDecoration = 'line-through';
+      }
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '삭제';
+      deleteBtn.style.marginLeft = '10px';
+      deleteBtn.addEventListener('click', () => {
+        todos.splice(index, 1);
+        saveAndRender();
+      });
+
+      li.appendChild(checkbox);
+      li.appendChild(span);
+      li.appendChild(deleteBtn);
+      todoList.appendChild(li);
+    });
+  }
+
+  function saveAndRender() {
+    localStorage.setItem(userKey, JSON.stringify(todos));
+    renderTodos();
+  }
+
+  addBtn.addEventListener('click', () => {
+    const text = todoInput.value.trim();
+    if (text) {
+      todos.push({ text, done: false });
+      todoInput.value = '';
+      saveAndRender();
+    }
+  });
+
+  todoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      addBtn.click();
+    }
+  });
+
+  renderTodos();
+</script>
+
+</body>
+</html>

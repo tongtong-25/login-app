@@ -1,52 +1,158 @@
 body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f5f5f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background-color: #f0f2f5;
+  font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 .container {
-  background-color: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 32px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-input {
-  padding: 12px;
-  font-size: 16px;
+h1 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+p {
+  font-size: 14px;
+  color: #555;
+}
+
+#todo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#todo-input {
+  padding: 10px 12px;
+  font-size: 14px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#add-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#add-btn:hover {
+  background-color: #0056b3;
+}
+
+#todo-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 16px;
+}
+
+#todo-list li {
+  background: #f9f9f9;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+#todo-list span {
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+#todo-list input[type="checkbox"] {
+  margin-right: 12px;
+}
+
+#todo-list button {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#todo-list button:hover {
+  background-color: #c82333;
+}
+
+.container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 32px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  box-sizing: border-box;
 }
 
 button {
+  width: 100%;
   padding: 12px;
-  background-color: #0066cc;
+  font-size: 14px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #004d99;
+  background-color: #0056b3;
 }
 
-/* 로그인/회원가입 화면의 하단 링크 버튼 */
 .link-button {
   display: block;
-  margin-top: 10px;
   text-align: center;
-  color: #0066cc;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6c63ff;
   text-decoration: none;
-  font-size: 14px;
 }
 
 .link-button:hover {
