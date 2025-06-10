@@ -2,165 +2,162 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>게시판</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📋 게시판</title>
   <style>
     body {
       font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f9f9f9;
       margin: 0;
       padding: 0;
     }
 
     .board-wrap {
       max-width: 1000px;
-      margin: 60px auto;
+      margin: 40px auto;
+      padding: 16px;
       background-color: #fff;
-      padding: 32px;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      overflow-x: auto;
     }
 
     h1 {
-      margin-bottom: 16px;
-    }
-
-    #search {
-      width: 60%;
-      padding: 10px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    #filter {
-      padding: 10px;
-      margin-left: 8px;
-      font-size: 14px;
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #333;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
+      min-width: 600px;
     }
 
     th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
+      border: 1px solid #ddd;
+      padding: 12px 8px;
       text-align: center;
       font-size: 14px;
     }
 
     th {
-      background-color: #f0f0f0;
+      background-color: #f0f0f5;
+      color: #444;
+    }
+
+    td.title {
+      text-align: left;
+      color: #007bff;
+      cursor: pointer;
     }
 
     .action-btn {
-      margin: 0 4px;
-      padding: 4px 8px;
-      font-size: 12px;
+      padding: 6px 10px;
+      font-size: 13px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
-    .empty {
-      text-align: center;
-      color: #888;
-      margin-top: 40px;
+    .edit-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      margin-left: 6px;
+    }
+
+    @media (max-width: 768px) {
+      th, td {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="board-wrap">
     <h1>📋 게시글 목록</h1>
-    <input type="text" id="search" placeholder="제목 검색..." />
-    <select id="filter">
-      <option value="">전체</option>
-      <option value="공지">공지</option>
-      <option value="질문">질문</option>
-      <option value="정보">정보</option>
-    </select>
     <table>
       <thead>
         <tr>
           <th>카테고리</th>
           <th>제목</th>
           <th>작성자</th>
-          <th>작성시간</th>
+          <th>작성일</th>
           <th>수정</th>
           <th>삭제</th>
         </tr>
       </thead>
-      <tbody id="post-list"></tbody>
+      <tbody id="post-table-body">
+        <!-- JS로 게시글 렌더링 -->
+      </tbody>
     </table>
-    <p class="empty" id="empty-msg" style="display: none;">게시글이 없습니다.</p>
+    <p id="empty-msg" style="text-align:center; margin-top:20px; color:#888; display:none;">게시글이 없습니다.</p>
   </div>
 
   <script>
-    const email = localStorage.getItem('userEmail');
-    const userKey = `posts_${email}`;
-    let posts = JSON.parse(localStorage.getItem(userKey)) || [];
-
-    const postList = document.getElementById('post-list');
+    const tbody = document.getElementById('post-table-body');
     const emptyMsg = document.getElementById('empty-msg');
-    const search = document.getElementById('search');
-    const filter = document.getElementById('filter');
+    const allPosts = [];
 
-    function render(filtered = posts) {
-      postList.innerHTML = '';
-      if (filtered.length === 0) {
-        emptyMsg.style.display = 'block';
-        return;
-      } else {
-        emptyMsg.style.display = 'none';
+    // 모든 사용자의 게시글 가져오기
+    for (let key in localStorage) {
+      if (key.startsWith('posts_')) {
+        const userPosts = JSON.parse(localStorage.getItem(key));
+        userPosts.forEach(post => {
+          allPosts.push({ ...post, user: key.replace('posts_', '') });
+        });
       }
+    }
 
-      filtered.slice().reverse().forEach((post) => {
-        const row = document.createElement('tr');
+    if (allPosts.length === 0) {
+      emptyMsg.style.display = 'block';
+    } else {
+      allPosts.reverse().forEach((post, idx) => {
+        const tr = document.createElement('tr');
 
-        row.innerHTML = `
-          <td>${post.category}</td>
-          <td><a href="view.html" onclick="event.preventDefault(); viewPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">${post.title}</a></td>
-          <td>${email}</td>
+        tr.innerHTML = `
+          <td>${post.category || '일반'}</td>
+          <td class="title">${post.title}</td>
+          <td>${post.user}</td>
           <td>${post.date}</td>
-          <td><button class="action-btn" onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">수정</button></td>
-          <td><button class="action-btn" onclick="deletePost(${JSON.stringify(post).replace(/"/g, '&quot;')})" style="color:red;">삭제</button></td>
+          <td><button class="action-btn edit-btn" onclick="editPost(${idx})">수정</button></td>
+          <td><button class="action-btn delete-btn" onclick="deletePost(${idx})">삭제</button></td>
         `;
 
-        postList.appendChild(row);
+        tr.querySelector('.title').addEventListener('click', () => {
+          localStorage.setItem('selectedPost', JSON.stringify(post));
+          window.location.href = 'view.html';
+        });
+
+        tbody.appendChild(tr);
       });
     }
 
-    function viewPost(post) {
-      localStorage.setItem('selectedPost', JSON.stringify(post));
-      window.location.href = 'view.html';
-    }
-
-    function editPost(post) {
+    function editPost(index) {
+      const post = allPosts[index];
       localStorage.setItem('selectedPost', JSON.stringify(post));
       window.location.href = 'edit.html';
     }
 
-    function deletePost(post) {
-      if (!confirm('정말 삭제하시겠습니까?')) return;
-      posts = posts.filter(p => p.title !== post.title || p.date !== post.date);
-      localStorage.setItem(userKey, JSON.stringify(posts));
-      render(posts);
+    function deletePost(index) {
+      const post = allPosts[index];
+      const userKey = `posts_${post.user}`;
+      const posts = JSON.parse(localStorage.getItem(userKey)) || [];
+      const updated = posts.filter(p => p.date !== post.date);
+      localStorage.setItem(userKey, JSON.stringify(updated));
+      alert('삭제되었습니다.');
+      window.location.reload();
     }
-
-    search.addEventListener('input', () => {
-      const keyword = search.value.toLowerCase();
-      const filtered = posts.filter(p => p.title.toLowerCase().includes(keyword));
-      render(filtered);
-    });
-
-    filter.addEventListener('change', () => {
-      const category = filter.value;
-      const filtered = category ? posts.filter(p => p.category === category) : posts;
-      render(filtered);
-    });
-
-    render();
   </script>
 </body>
 </html>
