@@ -2,97 +2,101 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>게시글 보기</title>
-  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.css"/>
   <style>
     body {
       font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f7f9fb;
+      background-color: #f7f8fa;
       margin: 0;
       padding: 0;
     }
-
-    .view-container {
-      max-width: 800px;
+    .viewer-wrap {
+      max-width: 720px;
       margin: 60px auto;
+      padding: 32px;
       background-color: #fff;
       border-radius: 12px;
-      padding: 32px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .meta {
-      color: #666;
-      font-size: 14px;
+    h2 {
       margin-bottom: 16px;
     }
-
+    .info {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 16px;
+    }
     .category {
       display: inline-block;
+      background-color: #eee;
+      color: #333;
       font-size: 13px;
-      background: #eee;
       padding: 4px 10px;
-      border-radius: 20px;
-      margin-right: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
     }
-
-    .btn-group {
+    .btns {
       margin-top: 24px;
+      display: flex;
+      gap: 12px;
     }
-
-    .btn-group button {
-      margin-right: 12px;
-      padding: 8px 16px;
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
+    .btn-blue { background-color: #007bff; color: white; }
+    .btn-gray { background-color: #6c757d; color: white; }
+    .btn-red { background-color: #dc3545; color: white; }
   </style>
 </head>
 <body>
-  <div class="view-container">
-    <h1 id="view-title">제목</h1>
-    <div class="meta">
-      <span class="category" id="view-category">카테고리</span>
-      <span id="view-date">작성일</span>
-    </div>
+  <div class="viewer-wrap">
+    <div class="category" id="post-category"></div>
+    <h2 id="post-title"></h2>
+    <div class="info" id="post-date"></div>
     <div id="viewer"></div>
-
-    <div class="btn-group">
-      <button onclick="window.location.href='board.html'">← 목록으로</button>
-      <button onclick="window.location.href='edit.html'">✏ 수정</button>
-      <button onclick="deletePost()" style="color: red;">🗑 삭제</button>
+    <div class="btns">
+      <button class="btn-gray" onclick="goBack()">목록으로</button>
+      <button class="btn-blue" onclick="editPost()">수정</button>
+      <button class="btn-red" onclick="deletePost()">삭제</button>
     </div>
   </div>
 
   <script src="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.js"></script>
   <script>
+    const viewer = toastui.Editor.factory({
+      el: document.querySelector('#viewer'),
+      viewer: true,
+    });
+
     const post = JSON.parse(localStorage.getItem('selectedPost'));
-    const email = localStorage.getItem('userEmail');
-    const key = `posts_${email}`;
-    const posts = JSON.parse(localStorage.getItem(key)) || [];
-
     if (post) {
-      document.getElementById('view-title').innerText = post.title;
-      document.getElementById('view-category').innerText = post.category;
-      document.getElementById('view-date').innerText = post.date;
+      document.getElementById('post-category').innerText = post.category;
+      document.getElementById('post-title').innerText = post.title;
+      document.getElementById('post-date').innerText = `작성일: ${post.date}`;
+      viewer.setHTML(post.content);
+    }
 
-      new toastui.Editor.factory({
-        el: document.querySelector('#viewer'),
-        viewer: true,
-        initialValue: post.content
-      });
+    function goBack() {
+      window.location.href = 'board.html';
+    }
+
+    function editPost() {
+      window.location.href = 'edit.html';
     }
 
     function deletePost() {
-      if (!confirm('정말 삭제하시겠습니까?')) return;
-
-      const updated = posts.filter(p => p.title !== post.title || p.date !== post.date);
-      localStorage.setItem(key, JSON.stringify(updated));
-      alert('삭제되었습니다.');
+      const email = localStorage.getItem('userEmail');
+      const key = `posts_${email}`;
+      let posts = JSON.parse(localStorage.getItem(key)) || [];
+      posts = posts.filter(p => p.date !== post.date);
+      localStorage.setItem(key, JSON.stringify(posts));
+      alert("삭제되었습니다.");
       window.location.href = 'board.html';
     }
   </script>
