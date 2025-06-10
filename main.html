@@ -1,222 +1,47 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>메인</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f6f7f9;
-    }
-
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 24px;
-      background-color: #fff;
-      min-height: 100vh;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-    }
-
-    p {
-      font-size: 0.9rem;
-      color: #555;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-top: 32px;
-      margin-bottom: 12px;
-    }
-
-    .section-title span {
-      margin-left: 8px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-      margin-bottom: 12px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      border: none;
-      background-color: #007bff;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #logout-btn {
-      float: right;
-      background-color: #ff5c5c;
-      font-size: 0.8rem;
-    }
-
-    ul#todo-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    ul#todo-list li {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .post-preview {
-      margin: 16px 0;
-      padding: 12px;
-      background-color: #f0f0f0;
-      border-radius: 6px;
-    }
-
-    .link {
-      display: inline-block;
-      margin-top: 8px;
-      color: #5b3cc4;
-      text-decoration: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>홈</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <button id="logout-btn">로그아웃</button>
-    <h1><span id="user-email"></span>님 환영합니다!</h1>
-    <p>🏠 당신의 TODO 리스트, 게시판, 채팅 기능이 여기에 나올 예정입니다.</p>
+  <div class="home-container">
+    <h2><span id="userEmail"></span>님 환영합니다!</h2>
 
-    <!-- ✅ TODO LIST -->
-    <div class="section-title">📝 <span>나의 TODO 리스트</span></div>
-    <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
-    <button id="add-btn">추가</button>
-    <ul id="todo-list"></ul>
-
-    <!-- ✅ 게시판 미리보기 -->
-    <div class="section-title">📋 <span>최신 게시글</span></div>
-    <div id="post-preview-container"></div>
-    <a href="board.html" class="link">📁 전체 게시판 보기</a>
+    <div class="menu-grid">
+      <a href="todo.html" class="menu-item">
+        <img src="icons/todo.png" alt="TODO">
+        <span>TODO</span>
+      </a>
+      <a href="board.html" class="menu-item">
+        <img src="icons/board.png" alt="게시판">
+        <span>게시판</span>
+      </a>
+      <a href="write.html" class="menu-item">
+        <img src="icons/write.png" alt="글쓰기">
+        <span>글쓰기</span>
+      </a>
+      <a href="mypage.html" class="menu-item">
+        <img src="icons/mypage.png" alt="마이페이지">
+        <span>마이페이지</span>
+      </a>
+      <button class="menu-item" onclick="logout()">
+        <img src="icons/logout.png" alt="로그아웃">
+        <span>로그아웃</span>
+      </button>
+    </div>
   </div>
 
   <script>
     const email = localStorage.getItem('userEmail');
-    const userEmail = document.getElementById('user-email');
-    const todoInput = document.getElementById('todo-input');
-    const todoList = document.getElementById('todo-list');
-    const addBtn = document.getElementById('add-btn');
-    const logoutBtn = document.getElementById('logout-btn');
+    document.getElementById('userEmail').innerText = email;
 
-    // 로그인 여부 체크
-    if (!email) {
-      alert("로그인 정보가 없습니다.");
-      location.href = "login.html";
-    } else {
-      userEmail.innerText = email;
-    }
-
-    // ✅ 사용자별 TODO 키
-    const todoKey = `todos_${email}`;
-    let todos = JSON.parse(localStorage.getItem(todoKey)) || [];
-
-    function renderTodos() {
-      todoList.innerHTML = '';
-      todos.forEach((item, idx) => {
-        const li = document.createElement('li');
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = item.done;
-        checkbox.addEventListener('change', () => {
-          todos[idx].done = checkbox.checked;
-          saveTodos();
-        });
-
-        const span = document.createElement('span');
-        span.innerText = item.text;
-        if (item.done) span.style.textDecoration = 'line-through';
-
-        const delBtn = document.createElement('button');
-        delBtn.innerText = '삭제';
-        delBtn.style.marginLeft = '10px';
-        delBtn.onclick = () => {
-          todos.splice(idx, 1);
-          saveTodos();
-        };
-
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(delBtn);
-        todoList.appendChild(li);
-      });
-    }
-
-    function saveTodos() {
-      localStorage.setItem(todoKey, JSON.stringify(todos));
-      renderTodos();
-    }
-
-    addBtn.addEventListener('click', () => {
-      const text = todoInput.value.trim();
-      if (text) {
-        todos.push({ text, done: false });
-        todoInput.value = '';
-        saveTodos();
-      }
-    });
-
-    todoInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addBtn.click();
-    });
-
-    logoutBtn.addEventListener('click', () => {
+    function logout() {
       localStorage.removeItem('userEmail');
-      location.href = 'login.html';
-    });
-
-    // ✅ 게시판 미리보기
-    const postPreviewContainer = document.getElementById('post-preview-container');
-    const allPosts = [];
-
-    for (let key in localStorage) {
-      if (key.startsWith('posts_')) {
-        const postList = JSON.parse(localStorage.getItem(key) || '[]');
-        allPosts.push(...postList);
-      }
+      window.location.href = "login.html";
     }
-
-    allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    if (allPosts.length === 0) {
-      postPreviewContainer.innerHTML = '<p>게시글이 없습니다.</p>';
-    } else {
-      const latest = allPosts.slice(0, 3);
-      latest.forEach(post => {
-        const div = document.createElement('div');
-        div.className = 'post-preview';
-        div.innerHTML = `<strong>[${post.category}]</strong> ${post.title}<br><small>${post.date}</small>`;
-        postPreviewContainer.appendChild(div);
-      });
-    }
-
-    renderTodos();
   </script>
 </body>
 </html>

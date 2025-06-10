@@ -36,12 +36,11 @@
 
   <script>
     const email = localStorage.getItem('userEmail');
-    document.getElementById('userEmail').innerText = email;
-
-    function logout() {
-      localStorage.removeItem('userEmail');
-      window.location.href = "login.html";
-    }
+    if (!email) {
+     alert("로그인 후 이용 가능합니다.");
+     window.location.href = 'login.html';
+  }
   </script>
+
 </body>
 </html>

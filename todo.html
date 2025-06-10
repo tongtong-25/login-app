@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TODO 리스트</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #7b4fff;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .todo-card {
+      background-color: #a080ff;
+      margin: 10px 0;
+      padding: 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      font-size: 16px;
+    }
+
+    .todo-card.done {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    .btn-add {
+      margin-top: 10px;
+      background-color: #fff;
+      color: #7b4fff;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      font-weight: bold;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: white;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 600px) {
+      .todo-card {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Simple Todo</h1>
+
+  <div id="todo-list"></div>
+
+  <input type="text" id="todo-input" placeholder="할 일을 입력하세요" />
+  <button class="btn-add" id="add-btn">추가</button>
+
+  <script>
+    const email = localStorage.getItem("userEmail");
+    const STORAGE_KEY = `todos_${email}`;
+    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    const todoList = document.getElementById("todo-list");
+    const todoInput = document.getElementById("todo-input");
+    const addBtn = document.getElementById("add-btn");
+
+    function saveTodos() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+
+    function renderTodos() {
+      todoList.innerHTML = "";
+      todos.forEach((todo, index) => {
+        const div = document.createElement("div");
+        div.className = "todo-card" + (todo.done ? " done" : "");
+
+        const label = document.createElement("label");
+        label.style.flexGrow = "1";
+        label.innerHTML = `
+          <input type="checkbox" ${todo.done ? "checked" : ""} style="margin-right:10px;" />
+          ${todo.text}
+        `;
+
+        label.querySelector("input").addEventListener("change", () => {
+          todos[index].done = !todos[index].done;
+          saveTodos();
+          renderTodos();
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-delete";
+        delBtn.innerHTML = "🗑️";
+        delBtn.onclick = () => {
+          todos.splice(index, 1);
+          saveTodos();
+          renderTodos();
+        };
+
+        div.appendChild(label);
+        div.appendChild(delBtn);
+        todoList.appendChild(div);
+      });
+    }
+
+    addBtn.addEventListener("click", () => {
+      const text = todoInput.value.trim();
+      if (text) {
+        todos.push({ text, done: false });
+        todoInput.value = "";
+        saveTodos();
+        renderTodos();
+      }
+    });
+
+    todoInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        addBtn.click();
+      }
+    });
+
+    renderTodos();
+  </script>
+</body>
+</html>
